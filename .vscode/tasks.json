@@ -19,6 +19,12 @@
     },
     {
       "type": "npm",
+      "label": "yarn: prettier",
+      "script": "prettier",
+      "problemMatcher": []
+    },
+    {
+      "type": "npm",
       "label": "yarn: test",
       "script": "test",
       "problemMatcher": [],
