@@ -1,6 +1,8 @@
 {
   "name": "ssc2sma",
-  "version": "0.1.0",
+  "description": "Step converter from .ssc to .sma; supports the following formats: StepMania 5 (Official), PIU Infinity, StepF2.",
+  "author": "Aldo Fregoso <aldomx@gmail.com>",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "react": "^16.8.1",
