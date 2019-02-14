@@ -50,9 +50,24 @@ export default class SongDirectoryDropZone extends React.Component<
     this.setState({
       conversionLog: [...this.state.conversionLog, `Converting ${file.path}...`]
     });
-    const sscLoader = new SscLoader(await PromiseFileReader.readAsText(file));
-    const smaLoader = SmaLoader.importFromSsc(sscLoader);
-    return smaLoader.toString();
+    try {
+      const sscLoader = new SscLoader(await PromiseFileReader.readAsText(file));
+      const smaLoader = SmaLoader.importFromSsc(sscLoader);
+      const convertedFile = smaLoader.toString();
+      const { conversionLog } = this.state;
+      conversionLog.pop();
+      this.setState({
+        conversionLog: [...conversionLog]
+      });
+      return convertedFile;
+    } catch (e) {
+      const { conversionLog } = this.state;
+      conversionLog.pop();
+      this.setState({
+        conversionLog: [...conversionLog, `ERROR converting ${file.path}`]
+      });
+      return null;
+    }
   };
 
   protected getDataTransferItems = async (event: Event) =>
@@ -70,7 +85,10 @@ export default class SongDirectoryDropZone extends React.Component<
           .replace(/\\/g, '/')
           .replace(/\.ssc$/i, '.sma');
         const filename = path.substring(path.lastIndexOf('/') + 1);
-        download(filename, await this.convertFile(files[0]));
+        const convertedFile = await this.convertFile(files[0]);
+        if (convertedFile != null) {
+          download(filename, convertedFile);
+        }
         return;
       }
 
@@ -90,7 +108,9 @@ export default class SongDirectoryDropZone extends React.Component<
             .replace(/\\/g, '/')
             .replace(/\.ssc$/i, '.sma');
           const content = await this.convertFile(file);
-          zip.file(path, content);
+          if (content != null) {
+            zip.file(path, content);
+          }
         }
         const zipContent = await zip.generateAsync({ type: 'blob' });
         download(`${rootFolder}.zip`, zipContent, 'application/zip');
