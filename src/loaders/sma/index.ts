@@ -114,6 +114,55 @@ const smaModifiers = new Set([
 const sscUnits = ['', 's'];
 
 export default class SmaLoader {
+  public static importFromSsc(sscLoader: SscLoader) {
+    const loader = new SmaLoader();
+    loader.globalTags.set('TITLE', sscLoader.globalTags.get('TITLE'));
+    loader.globalTags.set('SUBTITLE', sscLoader.globalTags.get('SUBTITLE'));
+    loader.globalTags.set('ARTIST', sscLoader.globalTags.get('ARTIST'));
+    loader.globalTags.set(
+        'TITLETRANSLIT', sscLoader.globalTags.get('TITLETRANSLIT'));
+    loader.globalTags.set(
+        'SUBTITLETRANSLIT', sscLoader.globalTags.get('SUBTITLETRANSLIT'));
+    loader.globalTags.set(
+        'ARTISTTRANSLIT', sscLoader.globalTags.get('ARTISTTRANSLIT'));
+    loader.globalTags.set('GENRE', sscLoader.globalTags.get('GENRE'));
+    loader.globalTags.set('MENUCOLOR', []);
+    loader.globalTags.set('BANNER', sscLoader.globalTags.get('BANNER'));
+    loader.globalTags.set('DISC', sscLoader.globalTags.get('DISCIMAGE'));
+    loader.globalTags.set('BACKGROUND', sscLoader.globalTags.get('BACKGROUND'));
+    loader.globalTags.set(
+        'PREVIEW',
+        sscLoader.isInfinity ? sscLoader.globalTags.get('BGAPREVIEW') :
+                               sscLoader.globalTags.get('PREVIEWVID'));
+    loader.globalTags.set('LYRICSPATH', sscLoader.globalTags.get('LYRICSPATH'));
+    loader.globalTags.set('CDTITLE', sscLoader.globalTags.get('CDTITLE'));
+    loader.globalTags.set('INTRO', sscLoader.globalTags.get('PREVIEW'));
+    loader.globalTags.set('MUSIC', sscLoader.globalTags.get('MUSIC'));
+    loader.globalTags.set(
+        'SAMPLESTART', sscLoader.globalTags.get('SAMPLESTART'));
+    loader.globalTags.set(
+        'SAMPLELENGTH', sscLoader.globalTags.get('SAMPLELENGTH'));
+    loader.globalTags.set('SELECTABLE', sscLoader.globalTags.get('SELECTABLE'));
+    loader.globalTags.set('SMAVERSION', ['1.0.0']);
+    loader.globalTags.set('ROWSPERBEAT', [[['0', '48']]]);
+    loader.globalTags.set('BEATSPERMEASURE', [[['0', '4']]]);
+    loader.globalTags.set('OFFSET', sscLoader.globalTags.get('OFFSET'));
+    loader.globalTags.set('BPMS', sscLoader.globalTags.get('BPMS'));
+    loader.globalTags.set('STOPS', sscLoader.globalTags.get('STOPS'));
+    loader.globalTags.set(
+        'BGCHANGES',
+        loader.convertSscBgChanges(
+            sscLoader.globalTags.get('BGCHANGES'), SmaLoader.noSongBgChange));
+    loader.globalTags.set(
+        'FGCHANGES',
+        loader.convertSscBgChanges(sscLoader.globalTags.get('FGCHANGES'), []));
+
+    for (const stepTag of sscLoader.stepTags) {
+      loader.importFromSscStepTag(sscLoader, stepTag);
+    }
+    return loader;
+  }
+
   protected static defaultMultiplier = [[['0.000', '1']]];
   protected static defaultSpeedChange = [[['0.000', '1.000']]];
   protected static noSongBgChange = [[[
@@ -124,52 +173,6 @@ export default class SmaLoader {
   public globalTags: Map<string, any> = new Map();
   public messages: string[] = [];
   public stepTags: Array<Map<string, any>> = [];
-
-  public importFromSsc(sscLoader: SscLoader) {
-    this.globalTags.set('TITLE', sscLoader.globalTags.get('TITLE'));
-    this.globalTags.set('SUBTITLE', sscLoader.globalTags.get('SUBTITLE'));
-    this.globalTags.set('ARTIST', sscLoader.globalTags.get('ARTIST'));
-    this.globalTags.set(
-        'TITLETRANSLIT', sscLoader.globalTags.get('TITLETRANSLIT'));
-    this.globalTags.set(
-        'SUBTITLETRANSLIT', sscLoader.globalTags.get('SUBTITLETRANSLIT'));
-    this.globalTags.set(
-        'ARTISTTRANSLIT', sscLoader.globalTags.get('ARTISTTRANSLIT'));
-    this.globalTags.set('GENRE', sscLoader.globalTags.get('GENRE'));
-    this.globalTags.set('MENUCOLOR', []);
-    this.globalTags.set('BANNER', sscLoader.globalTags.get('BANNER'));
-    this.globalTags.set('DISC', sscLoader.globalTags.get('DISCIMAGE'));
-    this.globalTags.set('BACKGROUND', sscLoader.globalTags.get('BACKGROUND'));
-    this.globalTags.set(
-        'PREVIEW',
-        sscLoader.isInfinity ? sscLoader.globalTags.get('BGAPREVIEW') :
-                               sscLoader.globalTags.get('PREVIEWVID'));
-    this.globalTags.set('LYRICSPATH', sscLoader.globalTags.get('LYRICSPATH'));
-    this.globalTags.set('CDTITLE', sscLoader.globalTags.get('CDTITLE'));
-    this.globalTags.set('INTRO', sscLoader.globalTags.get('PREVIEW'));
-    this.globalTags.set('MUSIC', sscLoader.globalTags.get('MUSIC'));
-    this.globalTags.set('SAMPLESTART', sscLoader.globalTags.get('SAMPLESTART'));
-    this.globalTags.set(
-        'SAMPLELENGTH', sscLoader.globalTags.get('SAMPLELENGTH'));
-    this.globalTags.set('SELECTABLE', sscLoader.globalTags.get('SELECTABLE'));
-    this.globalTags.set('SMAVERSION', ['1.0.0']);
-    this.globalTags.set('ROWSPERBEAT', [[['0', '48']]]);
-    this.globalTags.set('BEATSPERMEASURE', [[['0', '4']]]);
-    this.globalTags.set('OFFSET', sscLoader.globalTags.get('OFFSET'));
-    this.globalTags.set('BPMS', sscLoader.globalTags.get('BPMS'));
-    this.globalTags.set('STOPS', sscLoader.globalTags.get('STOPS'));
-    this.globalTags.set(
-        'BGCHANGES',
-        this.convertSscBgChanges(
-            sscLoader.globalTags.get('BGCHANGES'), SmaLoader.noSongBgChange));
-    this.globalTags.set(
-        'FGCHANGES',
-        this.convertSscBgChanges(sscLoader.globalTags.get('FGCHANGES'), []));
-
-    for (const stepTag of sscLoader.stepTags) {
-      this.importFromSscStepTag(sscLoader, stepTag);
-    }
-  }
 
   public toString() {
     const lines: string[] = [];
@@ -297,8 +300,14 @@ export default class SmaLoader {
     const meter = sscLoader.getStepTagValue(sscStepTag, 'METER')[0];
     const radarValues = sscLoader.isInfinity ?
         new Array(5).fill('0.000') :
-        sscLoader.getStepTagValue(sscStepTag, 'RADARVALUES')[0];
-    radarValues.length = 5;
+        (sscLoader.getStepTagValue(sscStepTag, 'RADARVALUES')[0] || []);
+    if (radarValues.length < 5) {
+      radarValues.length = 0;
+      radarValues.length = 5;
+      radarValues.fill('0.000');
+    } else {
+      radarValues.length = 5;
+    }
     const notes: SmStep = sscLoader.getStepTagValue(sscStepTag, 'NOTES');
     for (const row of notes.rows.values()) {
       for (const note of row.values()) {

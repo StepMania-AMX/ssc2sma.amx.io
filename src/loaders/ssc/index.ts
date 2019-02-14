@@ -35,7 +35,7 @@ export default class SscLoader {
       Object.freeze({TIME: null, LEN: null, MODS: null});
 
   private static parseSscFileRegex =
-      /^#((?:[^;]|(?:\\;))+)(?:(?<!\\);[^\r\n]*)?$/gim;
+      /^#((?:[^;](?!^#)|(?:\\;))+)(?:(?<!\\);[^\r\n]*)?$/gim;
 
   public isInfinity = false;
   public globalTags: Map<string, any> = new Map();
@@ -104,12 +104,14 @@ export default class SscLoader {
     }
     const attacks = [];
     let currentAttack = {...SscLoader.emptyAttack};
-    for (const [key, value] of tagValues.get('ATTACKS')) {
+    for (const [key, value = ''] of tagValues.get('ATTACKS')) {
       if (key === 'MODS') {
         currentAttack.MODS = value.split(/(?<!\\),/)
                                  .map((s: string) => s.trim())
                                  .filter((s: string) => s !== '');
-        attacks.push(currentAttack);
+        if (currentAttack.MODS !== '') {
+          attacks.push(currentAttack);
+        }
         currentAttack = {...SscLoader.emptyAttack};
       } else {
         currentAttack[key] = value;
@@ -126,7 +128,7 @@ export default class SscLoader {
       return;
     }
     const notes =
-        stepTags.get(notesKey)[0]
+        (stepTags.get(notesKey)[0] || '')
             .split(/(?<!\\)&/)
             .map(
                 (playerNotes: string) =>
