@@ -390,7 +390,7 @@ export default class SmaLoader {
         currentSpeedArea[3] = (parseFloat(beat) - previousBeat).toFixed(3);
         currentSpeedArea = null;
       }
-      if (parseFloat(scroll) !== 1.0) {
+      if (parseFloat(scroll) === 0.0) {
         currentSpeedArea = [
           beat,
           scroll,
