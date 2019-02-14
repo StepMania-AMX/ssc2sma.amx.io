@@ -2,47 +2,56 @@ import SmStep from '../sm/step';
 
 export default class SscLoader {
   protected static splitKeyValue = (keyValue: string) =>
-      keyValue.split(/(?<!\\)=/).map(s => s.trim()).filter(s => s !== '');
+    keyValue
+      .split(/(?<!\\)=/)
+      .map((s) => s.trim())
+      .filter((s) => s !== '');
 
   protected static splitTagKeyValues(
-      tagValues: Map<string, any>, name: string) {
+    tagValues: Map<string, any>,
+    name: string
+  ) {
     if (!tagValues.has(name)) {
       return;
     }
-    const splitValues = tagValues.get(name).map(
-        (keyValue: string) => this.splitKeyValue(keyValue));
+    const splitValues = tagValues
+      .get(name)
+      .map((keyValue: string) => this.splitKeyValue(keyValue));
     tagValues.set(name, splitValues);
   }
 
   protected static splitTagValues(
-      tagValues: Map<string, any>, name: string,
-      splitKeyValue: boolean = true) {
+    tagValues: Map<string, any>,
+    name: string,
+    splitKeyValue: boolean = true
+  ) {
     if (!tagValues.has(name)) {
       return;
     }
-    const splitValues = tagValues.get(name).map(
-        (rawValue: string) =>
-            rawValue.split(/(?<!\\),/)
-                .map(s => s.trim())
-                .filter(s => s !== '')
-                .map(
-                    value =>
-                        splitKeyValue ? this.splitKeyValue(value) : value));
+    const splitValues = tagValues.get(name).map((rawValue: string) =>
+      rawValue
+        .split(/(?<!\\),/)
+        .map((s) => s.trim())
+        .filter((s) => s !== '')
+        .map((value) => (splitKeyValue ? this.splitKeyValue(value) : value))
+    );
     tagValues.set(name, splitValues);
   }
 
-  private static emptyAttack =
-      Object.freeze({TIME: null, LEN: null, MODS: null});
+  private static emptyAttack = Object.freeze({
+    LEN: null,
+    MODS: null,
+    TIME: null
+  });
 
-  private static parseSscFileRegex =
-      /^#((?:[^;](?!^#)|(?:\\;))+)(?:(?<!\\);[^\r\n]*)?$/gim;
+  private static parseSscFileRegex = /^#((?:[^;](?!^#)|(?:\\;))+)(?:(?<!\\);[^\r\n]*)?$/gim;
 
   public isInfinity = false;
   public globalTags: Map<string, any> = new Map();
   public messages: string[] = [];
   public stepTags: Array<Map<string, any>> = [];
 
-  constructor(content: string|null) {
+  constructor(content: string | null) {
     if (content == null) {
       return;
     }
@@ -63,10 +72,12 @@ export default class SscLoader {
     const [version = null] = this.globalTags.get('VERSION') || [];
     if (version == null) {
       this.messages.push(
-          'The #VERSION tag is not present, assuming 0.83 which was the last known version.');
+        'The #VERSION tag is not present, assuming 0.83 which was the last known version.'
+      );
     } else if (parseFloat(version) > 0.83) {
       this.messages.push(
-          'This .ssc file is written for a more recent version than 0.83 and may have incompatible features that will be ignored.');
+        'This .ssc file is written for a more recent version than 0.83 and may have incompatible features that will be ignored.'
+      );
     }
 
     this.prepareGlobalTags();
@@ -89,10 +100,12 @@ export default class SscLoader {
     do {
       match = SscLoader.parseSscFileRegex.exec(content);
       if (match) {
-        matches.push(match[1]
-                         .split(/(?<!\\):/)
-                         .map(s => s.trim())
-                         .filter(s => s !== ''));
+        matches.push(
+          match[1]
+            .split(/(?<!\\):/)
+            .map((s) => s.trim())
+            .filter((s) => s !== '')
+        );
       }
     } while (match);
     return matches;
@@ -103,21 +116,22 @@ export default class SscLoader {
       return;
     }
     const attacks = [];
-    let currentAttack = {...SscLoader.emptyAttack};
+    let currentAttack = { ...SscLoader.emptyAttack };
     for (const [key, value = ''] of tagValues.get('ATTACKS')) {
       if (key === 'MODS') {
-        currentAttack.MODS = value.split(/(?<!\\),/)
-                                 .map((s: string) => s.trim())
-                                 .filter((s: string) => s !== '');
+        currentAttack.MODS = value
+          .split(/(?<!\\),/)
+          .map((s: string) => s.trim())
+          .filter((s: string) => s !== '');
         if (currentAttack.MODS !== '') {
           attacks.push(currentAttack);
         }
-        currentAttack = {...SscLoader.emptyAttack};
+        currentAttack = { ...SscLoader.emptyAttack };
       } else {
         currentAttack[key] = value;
       }
     }
-    if (Object.values(currentAttack).every(v => v != null)) {
+    if (Object.values(currentAttack).every((v) => v != null)) {
       attacks.push(currentAttack);
     }
     tagValues.set('ATTACKS', attacks);
@@ -127,24 +141,22 @@ export default class SscLoader {
     if (!stepTags.has(notesKey)) {
       return;
     }
-    const notes =
-        (stepTags.get(notesKey)[0] || '')
-            .split(/(?<!\\)&/)
-            .map(
-                (playerNotes: string) =>
-                    playerNotes.split(/(?<!\\),/)
-                        .map(
-                            (measure: string) =>
-                                measure.split(/[\r\n]+/)
-                                    .map(
-                                        (row: string) =>
-                                            row.replace(/\/\/.*$/, '').trim())
-                                    .filter((row: string) => row !== '')));
+    const notes = (stepTags.get(notesKey)[0] || '')
+      .split(/(?<!\\)&/)
+      .map((playerNotes: string) =>
+        playerNotes.split(/(?<!\\),/).map((measure: string) =>
+          measure
+            .split(/[\r\n]+/)
+            .map((row: string) => row.replace(/\/\/.*$/, '').trim())
+            .filter((row: string) => row !== '')
+        )
+      );
     let player = 0;
     const step = new SmStep();
     step.isInfinity = this.isInfinity;
     step.setNumColumnsFromStepStyle(
-        stepTags.get('STEPSTYPE')[0] || 'dance-single');
+      stepTags.get('STEPSTYPE')[0] || 'dance-single'
+    );
     for (const playerNotes of notes) {
       let rowStart = 0;
       for (const measure of playerNotes) {
@@ -180,7 +192,7 @@ export default class SscLoader {
 
     // %.03f=%i=%i
     SscLoader.splitTagValues(this.globalTags, 'TIMESIGNATURES');
-    SscLoader.splitTagValues(this.globalTags, 'COMBOS');  // may have %.03f=%i
+    SscLoader.splitTagValues(this.globalTags, 'COMBOS'); // may have %.03f=%i
 
     // %.03f=%.03f=%.03f=%u
     SscLoader.splitTagValues(this.globalTags, 'SPEEDS');
@@ -217,7 +229,7 @@ export default class SscLoader {
 
     // %.03f=%i=%i
     SscLoader.splitTagValues(stepTags, 'TIMESIGNATURES');
-    SscLoader.splitTagValues(stepTags, 'COMBOS');  // may have %.03f=%i
+    SscLoader.splitTagValues(stepTags, 'COMBOS'); // may have %.03f=%i
 
     // %.03f=%.03f=%.03f=%u
     SscLoader.splitTagValues(stepTags, 'SPEEDS');

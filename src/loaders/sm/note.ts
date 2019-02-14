@@ -1,14 +1,14 @@
-import {Nullable} from '../../util/common';
+import { Nullable } from '../../util/common';
 
 enum SmNoteBehavior {
   Fake = 'F',
-  Bonus = 'B',
+  Bonus = 'B'
 }
 
 enum SmNoteDisplay {
   Hidden = 'H',
   Appear = 'A',
-  Vanish = 'V',
+  Vanish = 'V'
 }
 
 enum SmNoteType {
@@ -24,51 +24,53 @@ enum SmNoteType {
   Attack = 'A',
   AutoKeysound = 'K',
   Lift = 'L',
-  Fake = 'F',
+  Fake = 'F'
 }
 
 const InfinityBehaviorToSmNoteBehavior = {
-  'B': SmNoteBehavior.Bonus,
-  'F': SmNoteBehavior.Fake,
+  B: SmNoteBehavior.Bonus,
+  F: SmNoteBehavior.Fake
 };
 
 const InfinityDisplayToSmNoteDisplay = {
-  'Hidden': SmNoteDisplay.Hidden,
-  'Stealth': SmNoteDisplay.Vanish,
-  'Sudden': SmNoteDisplay.Appear,
+  Hidden: SmNoteDisplay.Hidden,
+  Stealth: SmNoteDisplay.Vanish,
+  Sudden: SmNoteDisplay.Appear
 };
 
 const InfinityNoteTypeP3P4Conflicts = new Set([
-  'S',  // StepMania AMX's shock arrow
-  'Z',  // StepF2's P3 tap
+  'S', // StepMania AMX's shock arrow
+  'Z' // StepF2's P3 tap
 ]);
 
-const InfinityNoteTypeP3P4ToSmNoteType = new Map(Object.entries({
-  'E': SmNoteType.HoldTail,
-  'I': SmNoteType.Tap,
-  'S': SmNoteType.HoldHead,
-  'U': SmNoteType.Lift,
-  'W': SmNoteType.Mine,
-  'Z': SmNoteType.RollHead,
-  '~': SmNoteType.Fake,
-}));
+const InfinityNoteTypeP3P4ToSmNoteType = new Map(
+  Object.entries({
+    E: SmNoteType.HoldTail,
+    I: SmNoteType.Tap,
+    S: SmNoteType.HoldHead,
+    U: SmNoteType.Lift,
+    W: SmNoteType.Mine,
+    Z: SmNoteType.RollHead,
+    '~': SmNoteType.Fake
+  })
+);
 
 const SmNoteDisplayToInfinityDisplay = {
   [SmNoteDisplay.Hidden]: 'Hidden',
   [SmNoteDisplay.Vanish]: 'Stealth',
-  [SmNoteDisplay.Appear]: 'Sudden',
+  [SmNoteDisplay.Appear]: 'Sudden'
 };
 
 const StepF2BehaviorToSmNoteBehavior = {
   '0': null,
-  '1': SmNoteBehavior.Fake,
+  '1': SmNoteBehavior.Fake
 };
 
 const StepF2DisplayToSmNoteDisplay = {
-  'h': SmNoteDisplay.Hidden,
-  'n': null,
-  's': SmNoteDisplay.Vanish,
-  'v': SmNoteDisplay.Appear,
+  h: SmNoteDisplay.Hidden,
+  n: null,
+  s: SmNoteDisplay.Vanish,
+  v: SmNoteDisplay.Appear
 };
 
 export default class SmNote {
@@ -77,8 +79,11 @@ export default class SmNote {
   public static readonly Type = SmNoteType;
 
   public static createFromRow(
-      player: number, column: number, row: string,
-      isInfinity = false): Nullable<SmNote> {
+    player: number,
+    column: number,
+    row: string,
+    isInfinity = false
+  ): Nullable<SmNote> {
     if (column === 0) {
       SmNote.RowRegex.lastIndex = 0;
     }
@@ -87,19 +92,32 @@ export default class SmNote {
       return null;
     }
 
-    let noteType: SmNoteType = match[1] as SmNoteType || SmNote.Type.Empty;
-    const [, , sf2NoteType, sf2Display, sf2Behavior, , , attack, attackLength, keySound, script, infBehavior, infDisplay] =
-        match;
+    let noteType: SmNoteType = (match[1] as SmNoteType) || SmNote.Type.Empty;
+    const [
+      ,
+      ,
+      sf2NoteType,
+      sf2Display,
+      sf2Behavior,
+      ,
+      ,
+      attack,
+      attackLength,
+      keySound,
+      script,
+      infBehavior,
+      infDisplay
+    ] = match;
 
     if (sf2NoteType != null) {
-      noteType = sf2NoteType as SmNoteType || SmNote.Type.Empty;
+      noteType = (sf2NoteType as SmNoteType) || SmNote.Type.Empty;
     }
 
     if (InfinityNoteTypeP3P4ToSmNoteType.has(noteType)) {
       const hasConflict = InfinityNoteTypeP3P4Conflicts.has(noteType);
       if (isInfinity || !hasConflict) {
         noteType =
-            InfinityNoteTypeP3P4ToSmNoteType.get(noteType) || SmNote.Type.Empty;
+          InfinityNoteTypeP3P4ToSmNoteType.get(noteType) || SmNote.Type.Empty;
         player += 2;
       }
     }
@@ -149,10 +167,15 @@ export default class SmNote {
 
     const note = new SmNote(column, noteType, player);
     if (noteType !== SmNote.Type.Empty) {
-      note.behavior = InfinityBehaviorToSmNoteBehavior[infBehavior] ||
-          StepF2BehaviorToSmNoteBehavior[sf2Behavior] || null;
-      note.display = smaDisplay || InfinityDisplayToSmNoteDisplay[infDisplay] ||
-          StepF2DisplayToSmNoteDisplay[sf2Display] || null;
+      note.behavior =
+        InfinityBehaviorToSmNoteBehavior[infBehavior] ||
+        StepF2BehaviorToSmNoteBehavior[sf2Behavior] ||
+        null;
+      note.display =
+        smaDisplay ||
+        InfinityDisplayToSmNoteDisplay[infDisplay] ||
+        StepF2DisplayToSmNoteDisplay[sf2Display] ||
+        null;
       note.keySound = parseInt(keySound, 10) || null;
       note.attack = attack || null;
       note.attackLength = parseFloat(attackLength) || null;
@@ -165,8 +188,7 @@ export default class SmNote {
 
   private static get RowRegex(): RegExp {
     if (this.compiledRowRegex == null) {
-      this.compiledRowRegex =
-          /(?:(?:([^{])|{(.)\|(.)\|(.)\|([^}]+)}|(?:{([^}]+)}))(?:{([^:}]+)\\?\:([\d.]+)})?(?:\[(\d+)])?(?:<([^>]+)>)?(?:\*(.))?(?:\^(\w+)\^)?)/g;
+      this.compiledRowRegex = /(?:(?:([^{])|{(.)\|(.)\|(.)\|([^}]+)}|(?:{([^}]+)}))(?:{([^:}]+)\\?\:([\d.]+)})?(?:\[(\d+)])?(?:<([^>]+)>)?(?:\*(.))?(?:\^(\w+)\^)?)/g;
     }
     return this.compiledRowRegex;
   }
@@ -182,8 +204,10 @@ export default class SmNote {
   public script: Nullable<string> = null;
 
   constructor(
-      column: number, type: SmNoteType = SmNote.Type.Empty,
-      player: number = 0) {
+    column: number,
+    type: SmNoteType = SmNote.Type.Empty,
+    player: number = 0
+  ) {
     this.column = column;
     this.type = type;
     this.player = player;
@@ -223,8 +247,10 @@ export default class SmNote {
     if (this.behavior === SmNote.Behavior.Fake) {
       return '0';
     }
-    if (this.display === SmNote.Display.Hidden &&
-        this.type === SmNote.Type.Tap) {
+    if (
+      this.display === SmNote.Display.Hidden &&
+      this.type === SmNote.Type.Tap
+    ) {
       return 'H';
     }
     return this.type as string;

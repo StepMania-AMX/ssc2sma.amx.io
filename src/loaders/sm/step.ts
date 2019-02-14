@@ -1,5 +1,5 @@
 import gcd from 'gcd';
-import {Nullable} from '../../util/common';
+import { Nullable } from '../../util/common';
 import SmNote from './note';
 
 const numColumnsByStepStyle = {
@@ -47,8 +47,8 @@ const numColumnsByStepStyle = {
   'techno-double8': 16,
   'techno-single4': 4,
   'techno-single5': 5,
-  'techno-single8': 8,
-}
+  'techno-single8': 8
+};
 
 export default class SmStep {
   public beatsPerMeasure: Map<number, number> = new Map();
@@ -83,7 +83,7 @@ export default class SmStep {
         note = SmNote.createFromRow(player, ++column, row, this.isInfinity);
         this.addNoteAtRow(rowNumber, note);
       } while (note != null);
-      rowNumber += Math.floor(rowsPerBeat * beatsPerMeasure / measure.length);
+      rowNumber += Math.floor((rowsPerBeat * beatsPerMeasure) / measure.length);
     }
     return rowNumber;
   }
@@ -115,9 +115,7 @@ export default class SmStep {
 
   public toString(useSmaString = false) {
     const remainingRows: Map<number, Map<number, SmNote>> = new Map();
-    const rowsByPlayer: Array<Map<number, Map<number, SmNote>>> = [
-      new Map(),
-    ];
+    const rowsByPlayer: Array<Map<number, Map<number, SmNote>>> = [new Map()];
 
     // Use the first pass to also deep clone the rows to `remainingRows`
     let currentPlayer = 0;
@@ -180,14 +178,14 @@ export default class SmStep {
           playerRows.delete(rowNumber);
         }
         const resolution =
-            [...rowsThisMeasure.keys()].reduce(
-                (res, row) => Math.max(
-                    res, Math.floor(rowsPerBeat / gcd(row, rowsPerBeat))),
-                1) *
-            beatsPerMeasure;
+          [...rowsThisMeasure.keys()].reduce(
+            (res, row) =>
+              Math.max(res, Math.floor(rowsPerBeat / gcd(row, rowsPerBeat))),
+            1
+          ) * beatsPerMeasure;
         const lines = [];
         for (let r = 0; r < resolution; r++) {
-          const rowNumber = startRow + r * rowsPerMeasure / resolution;
+          const rowNumber = startRow + (r * rowsPerMeasure) / resolution;
           if (!rowsThisMeasure.has(rowNumber)) {
             lines.push(emptyRow);
             continue;
@@ -207,8 +205,9 @@ export default class SmStep {
         linesByPlayer[currentPlayer].push(lines.join('\r\n'));
         startRow = endRow;
       }
-      linesByPlayer[currentPlayer] =
-          linesByPlayer[currentPlayer].join('\r\n,\r\n');
+      linesByPlayer[currentPlayer] = linesByPlayer[currentPlayer].join(
+        '\r\n,\r\n'
+      );
     }
     return linesByPlayer.join('\r\n&\r\n');
   }
