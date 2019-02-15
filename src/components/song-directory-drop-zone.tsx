@@ -112,8 +112,14 @@ export default class SongDirectoryDropZone extends React.Component<
             zip.file(path, content);
           }
         }
-        const zipContent = await zip.generateAsync({ type: 'blob' });
-        download(`${rootFolder}.zip`, zipContent, 'application/zip');
+        if (Object.entries(zip.files).length > 0) {
+          const zipContent = await zip.generateAsync({ type: 'blob' });
+          download(`${rootFolder}.zip`, zipContent, 'application/zip');
+        } else {
+          alert(
+            'Download aborted, all the files had errors during the conversion.'
+          );
+        }
       }
     }
   };
