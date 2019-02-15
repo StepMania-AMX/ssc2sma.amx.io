@@ -333,10 +333,13 @@ export default class SmaLoader {
     sscLoader: SscLoader,
     sscStepTag: Map<string, any>
   ) {
-    const stepsType = sscLoader.getStepTagValue(sscStepTag, 'STEPSTYPE')[0];
-    const description = sscLoader.getStepTagValue(sscStepTag, 'DESCRIPTION')[0];
-    const difficulty = sscLoader.getStepTagValue(sscStepTag, 'DIFFICULTY')[0];
-    const meter = sscLoader.getStepTagValue(sscStepTag, 'METER')[0];
+    const stepsType =
+      sscLoader.getStepTagValue(sscStepTag, 'STEPSTYPE')[0] || 'dance-single';
+    const description =
+      sscLoader.getStepTagValue(sscStepTag, 'DESCRIPTION')[0] || '';
+    const difficulty =
+      sscLoader.getStepTagValue(sscStepTag, 'DIFFICULTY')[0] || 'Edit';
+    const meter = sscLoader.getStepTagValue(sscStepTag, 'METER')[0] || '0*';
     const radarValues = sscLoader.isInfinity
       ? new Array(5).fill('0.000')
       : sscLoader.getStepTagValue(sscStepTag, 'RADARVALUES')[0] || [];

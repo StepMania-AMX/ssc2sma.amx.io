@@ -90,7 +90,7 @@ export default class SscLoader {
     if (stepTags.has(key)) {
       return stepTags.get(key);
     }
-    return this.globalTags.get(key);
+    return this.globalTags.get(key) || [];
   }
 
   public parse(content: string) {
